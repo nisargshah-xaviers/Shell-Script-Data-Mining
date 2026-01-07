@@ -1,0 +1,12 @@
+=== Data Quality Summary ===
+Original records: 17691
+Cleaned records: 17692
+
+Cleaning operations performed:
+- Removed Windows line endings
+- Normalized whitespace around delimiters
+- Removed quotation marks
+- Standardized date formats
+- Validated amount_due <= total_amount
+- Handled NULL/missing values
+- Removed invalid records
