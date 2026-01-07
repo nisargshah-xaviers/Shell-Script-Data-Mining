@@ -506,7 +506,7 @@ with col3:
     st.markdown("**Outstanding**")
     st.markdown(f"### ${total_outstanding:,.0f}")
 with col4:
-    st.markdown("**Collection Rate**")
+    st.markdown("**Cash Collection Rate**")
     st.markdown(f"### {collection_rate:.1f}%")
 with col5:
     st.markdown("**Total Invoices**")
@@ -515,17 +515,15 @@ with col5:
 st.markdown("---")
 
 # Create tabs for different analyses
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Original Dashboard",
-    "📈 Overview", 
-    "💰 Payment Analysis", 
-    "⏰ Timing & Delays",
-    "👥 Payer Insights",
-    "📋 Data Explorer"
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📊 Overview",
+    "💰 Payment Status", 
+    "⏰ Payment Timing",
+    "👥 Payer Reliability",
+    "🔍 Data Filter"
 ])
 
 with tab1:
-    st.subheader("Original Analysis Dashboard")
     
     col1, col2 = st.columns(2)
     
@@ -617,17 +615,14 @@ with tab2:
     
     # Quarterly Trends
     with col2:
-        st.subheader("📊 Quarterly Revenue Trends")
-        quarterly_data = load_data("SELECT * FROM quarterly_trends ORDER BY quarter")
+        st.subheader("🏆 Top 10 Payers by Value")
+        top_payers = load_data("SELECT * FROM top_payers LIMIT 10")
         
-        if not quarterly_data.empty:
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=quarterly_data['quarter'], y=quarterly_data['total_invoiced'], 
-                                name='Invoiced', marker_color='lightblue'))
-            fig.add_trace(go.Bar(x=quarterly_data['quarter'], y=quarterly_data['total_collected'], 
-                                name='Collected', marker_color='green'))
-            fig.update_layout(barmode='group', xaxis_title='Quarter', yaxis_title='Amount ($)')
-            st.plotly_chart(fig, use_container_width=True, key="quarterly_trends_chart")
+        if not top_payers.empty:
+            fig = px.bar(top_payers, x='total_amount', y='payer_id', orientation='h',
+                        color='total_amount', color_continuous_scale='Viridis')
+            fig.update_layout(yaxis={'categoryorder':'total ascending'})
+            st.plotly_chart(fig, use_container_width=True, key="top_payers_bar")
     
     # Monthly Volume
     st.subheader("📅 Monthly Invoice Volume")
@@ -654,18 +649,18 @@ with tab3:
             display_timing['total_amount'] = display_timing['total_amount'].apply(lambda x: f"${x:,.0f}")
             display_timing.columns = ["Timing", "Count", "Amount"]
             st.dataframe(display_timing, use_container_width=True, hide_index=True)
-    
     with col2:
-        st.subheader("🏆 Top 10 Payers by Value")
-        top_payers = load_data("SELECT * FROM top_payers LIMIT 10")
+        st.subheader("📊 Quarterly Revenue Trends")
+        quarterly_data = load_data("SELECT * FROM quarterly_trends ORDER BY quarter")
         
-        if not top_payers.empty:
-            fig = px.bar(top_payers, x='total_amount', y='payer_id', orientation='h',
-                        color='total_amount', color_continuous_scale='Viridis')
-            fig.update_layout(yaxis={'categoryorder':'total ascending'})
-            st.plotly_chart(fig, use_container_width=True, key="top_payers_bar")
-
-with tab4:
+        if not quarterly_data.empty:
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=quarterly_data['quarter'], y=quarterly_data['total_invoiced'], 
+                                name='Invoiced', marker_color='lightblue'))
+            fig.add_trace(go.Bar(x=quarterly_data['quarter'], y=quarterly_data['total_collected'], 
+                                name='Collected', marker_color='green'))
+            fig.update_layout(barmode='group', xaxis_title='Quarter', yaxis_title='Amount ($)')
+            st.plotly_chart(fig, use_container_width=True, key="quarterly_trends_chart")
     st.subheader("⏱️ Payment Delay Analysis")
     
     col1, col2 = st.columns([2, 1])
@@ -685,7 +680,7 @@ with tab4:
             for _, row in delay_data.iterrows():
                 st.metric(row['delay_range'], f"{row['count']:,} invoices")
 
-with tab5:
+with tab4:
     st.subheader("👥 Payer Reliability Analysis")
     st.markdown("*Reliability Score = 60% Payment Rate + 40% On-Time Rate*")
     
@@ -725,7 +720,7 @@ with tab5:
                                'Reliability', 'Invoice Count']
         st.dataframe(display_full, use_container_width=True, hide_index=True)
 
-with tab6:
+with tab5:
     st.subheader("📋 Invoice Explorer")
     
     col1, col2, col3 = st.columns(3)
@@ -780,7 +775,7 @@ with tab6:
         st.info("No matching records found.")
 
 st.markdown("---")
-st.markdown("*Dashboard powered by Streamlit | Data processed with Shell utilities*")
+st.markdown("*Dashboard by Nisarg Shah*")
 
 PYTHON
 
